@@ -1,0 +1,7 @@
+- [x] Update base.html: Add navigation links for About and History, modernize CSS with latest Bootstrap and custom styles
+- [x] Update views.py: Strip markdown from AI responses before saving and returning
+- [x] Fix views.py import error: Add from django.db import models
+- [x] Create missing templates: resources.html, market_prices.html, weather_alerts.html, bookmarks.html
+- [x] Fix weather_alerts.html template syntax error
+- [x] Fix 'StructuredTool' object is not callable error in agricultural_agent.py
+- [ ] Test the website: Run server and verify navigation works, UI looks modern, and responses are clean

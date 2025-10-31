@@ -1,0 +1,132 @@
+{% extends 'advisor_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "Educational Resources" %}</h2>
+        <a href="{% url 'advisor_app:home' %}" class="btn btn-success">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Advisor" %}
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="type" class="form-label">{% trans "Resource Type" %}</label>
+                    <select name="type" id="type" class="form-select">
+                        <option value="">{% trans "All Types" %}</option>
+                        <option value="article" {% if resource_type == 'article' %}selected{% endif %}>{% trans "Articles" %}</option>
+                        <option value="video" {% if resource_type == 'video' %}selected{% endif %}>{% trans "Videos" %}</option>
+                        <option value="guide" {% if resource_type == 'guide' %}selected{% endif %}>{% trans "Guides" %}</option>
+                        <option value="research" {% if resource_type == 'research' %}selected{% endif %}>{% trans "Research" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="q" class="form-label">{% trans "Search" %}</label>
+                    <input type="text" name="q" id="q" class="form-control" placeholder="{% trans 'Search resources...' %}" value="{{ search_query }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> {% trans "Search" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resources Grid -->
+    <div class="row">
+        {% if external_results %}
+            {% for res in external_results %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ res.title }}</h5>
+                        <p class="card-text flex-grow-1">{{ res.content|truncatewords:20 }}</p>
+                        <div class="mt-auto">
+                            <div class="mt-2">
+                                {% if res.url %}
+                                <a href="{{ res.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-external-link-alt"></i> {% trans "View Resource" %}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+    {% for resource in page_obj %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                {% if resource.image_url %}
+                <img src="{{ resource.image_url }}" class="card-img-top" alt="{{ resource.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ resource.title }}</h5>
+                    <p class="card-text flex-grow-1">{{ resource.description|truncatewords:20 }}</p>
+                    <div class="mt-auto">
+                        <span class="badge bg-secondary">{{ resource.get_resource_type_display }}</span>
+                        {% if resource.is_featured %}
+                        <span class="badge bg-warning text-dark ms-1">{% trans "Featured" %}</span>
+                        {% endif %}
+                        <div class="mt-2">
+                            <a href="{{ resource.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> {% trans "View Resource" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>{% trans "Published" %}: {{ resource.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> {% trans "No resources found matching your criteria." %}
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Resource pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if resource_type %}&type={{ resource_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    {% trans "Previous" %}
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if resource_type %}&type={{ resource_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if resource_type %}&type={{ resource_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    {% trans "Next" %}
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'advisor_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "My Bookmarks" %}</h2>
+        <a href="{% url 'advisor_app:home' %}" class="btn btn-success">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Advisor" %}
+        </a>
+    </div>
+
+    {% if bookmarks %}
+    <div class="row">
+        {% for bookmark in bookmarks %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title mb-0">{{ bookmark.title|default:bookmark.query.query_text|truncatewords:8 }}</h5>
+                        <small class="text-muted">{{ bookmark.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted">{% trans "Original Query" %}:</h6>
+                        <p class="mb-2">{{ bookmark.query.query_text }}</p>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i> {{ bookmark.query.location }}
+                                </small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-language"></i> {{ bookmark.query.language|upper }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if bookmark.notes %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">{% trans "Your Notes" %}:</h6>
+                        <p class="mb-0">{{ bookmark.notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">{% trans "AI Response" %}:</h6>
+                        {% if bookmark.external_results %}
+                            {% with first=bookmark.external_results.0 %}
+                                <p class="mb-0">{{ first.content|default:bookmark.query.response|truncatewords:50 }}</p>
+                            {% endwith %}
+                        {% else %}
+                            <p class="mb-0">{{ bookmark.query.response|truncatewords:50 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            {% trans "Bookmarked on" %} {{ bookmark.created_at|date:"M d, Y H:i" }}
+                        </small>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary me-2 view-full-btn" data-query-id="{{ bookmark.query.id }}" data-query="{{ bookmark.query.query_text|escapejs }}" data-response="{{ bookmark.query.response|escapejs }}">
+                                <i class="fas fa-eye"></i> {% trans "View Full" %}
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger remove-bookmark-btn" data-bookmark-id="{{ bookmark.id }}">
+                                <i class="fas fa-trash"></i> {% trans "Remove" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <i class="fas fa-bookmark text-muted fa-3x mb-3"></i>
+            <h5>{% trans "No Bookmarks Yet" %}</h5>
+            <p class="text-muted">{% trans "You haven't bookmarked any queries yet. Ask the AI advisor some questions and bookmark the useful ones!" %}</p>
+            <a href="{% url 'advisor_app:home' %}" class="btn btn-success">
+                <i class="fas fa-robot"></i> {% trans "Ask AI Advisor" %}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bookmark Statistics -->
+    {% if bookmarks %}
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-4 text-primary">{{ bookmarks|length }}</div>
+                    <p class="text-muted mb-0">{% trans "Total Bookmarks" %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-4 text-success">{{ bookmarks|length|add:0 }}</div>
+                    <p class="text-muted mb-0">{% trans "This Month" %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-4 text-info">{{ bookmarks|length|add:0 }}</div>
+                    <p class="text-muted mb-0">{% trans "This Week" %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal for Full Response -->
+<div class="modal fade" id="fullResponseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Full AI Response" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="fullResponseContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function viewFullResponse(queryId) {
+    // Show loading state
+    // Show stored response (if any) immediately while external results are fetched
+    var stored = document.querySelector('[data-query-id="' + queryId + '"]')?.dataset?.response;
+    if (stored) {
+        document.getElementById('fullResponseContent').innerHTML = '<pre>' + stored + '</pre>';
+    } else {
+        document.getElementById('fullResponseContent').innerHTML = '<p>Loading full response...</p>';
+    }
+    var modal = new bootstrap.Modal(document.getElementById('fullResponseModal'));
+    modal.show();
+
+    // Try to fetch external search results via AJAX
+    // use the query text stored on the button
+    var qtext = document.querySelector('[data-query-id="' + queryId + '"]')?.dataset?.query || '';
+    fetch('{% url "advisor_app:external_search" %}?q=' + encodeURIComponent(qtext))
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+            if (data.results && data.results.length > 0) {
+                // show first external result
+                var first = data.results[0];
+                var html = '<h6>' + (first.title || '') + '</h6>';
+                html += '<p>' + (first.content || '') + '</p>';
+                if (first.url) html += '<p><a href="' + first.url + '" target="_blank">' + first.url + '</a></p>';
+                document.getElementById('fullResponseContent').innerHTML = html;
+            } else if (data.error) {
+                document.getElementById('fullResponseContent').innerHTML = '<p>Error: ' + data.error + '</p>';
+            } else {
+                document.getElementById('fullResponseContent').innerHTML = '<p>No external results found.</p>';
+            }
+        })
+        .catch(function(err) {
+            // External search failed — leave the stored response visible if present
+            var storedFallback = document.querySelector('[data-query-id="' + queryId + '"]')?.dataset?.response;
+            if (storedFallback) {
+                document.getElementById('fullResponseContent').innerHTML = '<pre>' + storedFallback + '</pre>';
+            } else {
+                document.getElementById('fullResponseContent').innerHTML = '<p>External search unavailable. Please try again later.</p>';
+            }
+        });
+}
+
+function removeBookmark(bookmarkId) {
+    if (confirm('{% trans "Are you sure you want to remove this bookmark?" %}')) {
+        // This would typically make an AJAX call to remove the bookmark
+        // For now, we'll just reload the page
+        window.location.reload();
+    }
+}
+
+// Attach event listeners to buttons rendered in the template
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.view-full-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var qid = btn.dataset.queryId;
+            viewFullResponse(qid);
+        });
+    });
+
+    document.querySelectorAll('.remove-bookmark-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var bid = btn.dataset.bookmarkId;
+            // Call removeBookmark with the bookmark id
+            removeBookmark(bid);
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

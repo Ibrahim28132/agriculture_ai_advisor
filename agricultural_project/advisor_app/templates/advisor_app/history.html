@@ -1,0 +1,37 @@
+{% extends 'advisor_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{% trans "Query History" %}</h2>
+    <a href="{% url 'advisor_app:home' %}" class="btn btn-success">
+        <i class="fas fa-arrow-left"></i> {% trans "Back to Advisor" %}
+    </a>
+</div>
+
+<div class="row">
+    {% for query in queries %}
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <strong>{{ query.location }}</strong>
+                <span class="badge bg-secondary float-end">{{ query.language|upper }}</span>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">{% trans "Query" %}:</h6>
+                <p class="card-text">{{ query.query_text }}</p>
+                <h6 class="card-title">{% trans "Response" %}:</h6>
+                <p class="card-text">{{ query.response|truncatewords:30 }}</p>
+                <small class="text-muted">{{ query.created_at }}</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            {% trans "No queries yet. Ask the AI advisor some questions!" %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

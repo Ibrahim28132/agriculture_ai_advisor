@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+/static/
+
+# Virtual Environments
+venv/
+.env
+agricultural_advisor_env/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Byte-compiled / distribution
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Mac / Windows
+.DS_Store
+Thumbs.db
+
+# Docker
+.env
+docker-compose.override.yml
+
+# GitHub Actions cache
+.github/workflows/.cache/

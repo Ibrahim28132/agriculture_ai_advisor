@@ -1,0 +1,161 @@
+{% extends 'advisor_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "Market Prices" %}</h2>
+        <a href="{% url 'advisor_app:home' %}" class="btn btn-success">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Advisor" %}
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <label for="location" class="form-label">{% trans "Location" %}</label>
+                    <input type="text" name="location" id="location" class="form-control" placeholder="{% trans 'Enter location...' %}" value="{{ location }}">
+                </div>
+                <div class="col-md-5">
+                    <label for="commodity" class="form-label">{% trans "Commodity" %}</label>
+                    <input type="text" name="commodity" id="commodity" class="form-control" placeholder="{% trans 'Enter commodity...' %}" value="{{ commodity }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> {% trans "Search" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Market Prices Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-line text-success"></i> {% trans "Current Market Prices" %}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if external_prices %}
+            <div class="row">
+                {% for item in external_prices %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ item.title }}</h6>
+                            <p class="card-text">{{ item.content|truncatewords:30 }}</p>
+                            {% if item.url %}
+                            <a href="{{ item.url }}" target="_blank" class="btn btn-sm btn-outline-primary">{{ item.url }}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% elif prices %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>{% trans "Commodity" %}</th>
+                            <th>{% trans "Location" %}</th>
+                            <th>{% trans "Price" %}</th>
+                            <th>{% trans "Unit" %}</th>
+                            <th>{% trans "Change" %}</th>
+                            <th>{% trans "Last Updated" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for price in prices %}
+                        <tr>
+                            <td>
+                                <strong>{{ price.commodity }}</strong>
+                            </td>
+                            <td>{{ price.location }}</td>
+                            <td>
+                                <span class="fw-bold text-success">{{ price.price }} {{ price.currency }}</span>
+                            </td>
+                            <td>{{ price.unit }}</td>
+                            <td>
+                                {% if price.price_change %}
+                                {% if price.price_change > 0 %}
+                                <span class="text-success">
+                                    <i class="fas fa-arrow-up"></i> +{{ price.price_change }}%
+                                </span>
+                                {% elif price.price_change < 0 %}
+                                <span class="text-danger">
+                                    <i class="fas fa-arrow-down"></i> {{ price.price_change }}%
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ price.recorded_at|date:"M d, Y H:i" }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> {% trans "No market prices found for the selected criteria." %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Market Insights -->
+    {% if prices %}
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar text-primary"></i> {% trans "Price Trends" %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        {% trans "Monitor price fluctuations to make informed decisions about when to buy or sell your crops." %}
+                    </p>
+                        <div class="d-flex justify-content-between">
+                        <span>{% trans "Average Price" %}:</span>
+                        <strong>{{ prices|length|default:0 }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb text-warning"></i> {% trans "Market Tips" %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Check prices regularly for best timing" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Consider transportation costs" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Compare multiple markets" %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'advisor_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "Weather Alerts" %}</h2>
+        <a href="{% url 'advisor_app:home' %}" class="btn btn-success">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Advisor" %}
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <label for="location" class="form-label">{% trans "Location" %}</label>
+                    <input type="text" name="location" id="location" class="form-control" placeholder="{% trans 'Enter location...' %}" value="{{ location }}">
+                </div>
+                <div class="col-md-5">
+                    <label for="type" class="form-label">{% trans "Alert Type" %}</label>
+                    <select name="type" id="type" class="form-select">
+                        <option value="">{% trans "All Types" %}</option>
+                        <option value="storm" {% if alert_type == 'storm' %}selected{% endif %}>{% trans "Storm Warning" %}</option>
+                        <option value="flood" {% if alert_type == 'flood' %}selected{% endif %}>{% trans "Flood Warning" %}</option>
+                        <option value="drought" {% if alert_type == 'drought' %}selected{% endif %}>{% trans "Drought Alert" %}</option>
+                        <option value="frost" {% if alert_type == 'frost' %}selected{% endif %}>{% trans "Frost Warning" %}</option>
+                        <option value="heat" {% if alert_type == 'heat' %}selected{% endif %}>{% trans "Heat Alert" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> {% trans "Filter" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Weather Alerts -->
+    {% if alerts %}
+    <div class="row">
+        {% for alert in alerts %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-left-{{ alert.get_alert_type_color }} h-100">
+                <div class="card-header bg-{{ alert.get_alert_type_color }} text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas {{ alert.get_alert_type_icon }}"></i> {{ alert.get_alert_type_display }}
+                        </h5>
+                        <span class="badge bg-light text-dark">{{ alert.severity|upper }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">{{ alert.title }}</h6>
+                    <p class="card-text">{{ alert.description }}</p>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt"></i> {{ alert.location }}
+                            </small>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt"></i> {{ alert.created_at|date:"M d, Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+
+                    {% if alert.recommended_actions %}
+                    <div class="mt-3">
+                        <h6>{% trans "Recommended Actions" %}:</h6>
+                        <ul class="list-unstyled">
+                            {% for action in alert.recommended_actions %}
+                            <li><i class="fas fa-check-circle text-success"></i> {{ action }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        {% trans "Valid until" %}: {% if alert.expires_at %}{{ alert.expires_at|date:"M d, Y H:i" }}{% else %}{% trans "Ongoing" %}{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <i class="fas fa-sun text-warning fa-3x mb-3"></i>
+            <h5>{% trans "No Active Weather Alerts" %}</h5>
+            <p class="text-muted">{% trans "There are currently no weather alerts for your selected criteria." %}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Weather Information -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle text-info"></i> {% trans "Weather Alert Types" %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-cloud-showers-heavy text-primary me-2"></i>
+                                <small>{% trans "Storm" %}</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-water text-info me-2"></i>
+                                <small>{% trans "Flood" %}</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-sun text-warning me-2"></i>
+                                <small>{% trans "Drought" %}</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-snowflake text-primary me-2"></i>
+                                <small>{% trans "Frost" %}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-shield-alt text-success"></i> {% trans "Stay Prepared" %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Monitor weather forecasts regularly" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Have emergency plans ready" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Protect crops during adverse weather" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> {% trans "Stay informed through multiple sources" %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

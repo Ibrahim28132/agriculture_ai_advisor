@@ -1,0 +1,86 @@
+{% extends 'advisor_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center mb-4">{% trans "About AI Agricultural Advisor" %}</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{% trans "Our Mission" %}</h5>
+                <p class="card-text">
+                    {% trans "The AI Agricultural Advisor is designed to assist farmers and agricultural professionals with real-time, data-driven advice. By leveraging advanced AI and multiple data sources, we provide personalized recommendations for crop management, weather adaptation, and sustainable practices." %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">{% trans "Features" %}</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-cloud-sun text-success"></i>
+                        <strong>{% trans "Weather Integration" %}</strong>: {% trans "Real-time weather forecasts and historical data analysis." %}
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-seedling text-success"></i>
+                        <strong>{% trans "Crop Advice" %}</strong>: {% trans "Tailored recommendations for specific crops and regions." %}
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-language text-success"></i>
+                        <strong>{% trans "Multilingual Support" %}</strong>: {% trans "Available in multiple languages to serve diverse communities." %}
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-search text-success"></i>
+                        <strong>{% trans "Agricultural Research" %}</strong>: {% trans "Access to the latest research and best practices." %}
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-database text-success"></i>
+                        <strong>{% trans "Soil Analysis" %}</strong>: {% trans "Soil type and condition-based recommendations." %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">{% trans "Technology Stack" %}</h5>
+                <p class="card-text">
+                    {% trans "This platform is built using Django, LangGraph, and various APIs including OpenWeatherMap, Tavily Search, and OpenAI. The system is designed to be scalable and adaptable to new data sources and regions." %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">{% trans "Supported Languages" %}</h5>
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-flag-usa fa-2x mb-2"></i>
+                        <p>English</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-flag fa-2x mb-2"></i>
+                        <p>Spanish</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-flag fa-2x mb-2"></i>
+                        <p>French</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-flag fa-2x mb-2"></i>
+                        <p>Hindi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'advisor_app:home' %}" class="btn btn-success btn-lg">
+                <i class="fas fa-robot"></i> {% trans "Try the Advisor" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
