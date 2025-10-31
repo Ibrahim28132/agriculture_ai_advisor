@@ -1,10 +1,10 @@
 Django==5.0.6
-langgraph==1.0.2
-langchain==1.0.3
-langchain-openai==1.0.1
-langchain-community==0.4.1
-langchain-core==1.0.2
-openai==1.30.1
+langgraph
+langchain
+langchain-openai
+langchain-community
+langchain-core
+openai
 python-dotenv==1.0.1
 requests==2.32.3
 uvicorn==0.30.1
