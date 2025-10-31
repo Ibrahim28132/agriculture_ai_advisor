@@ -35,9 +35,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run migrations
+        working-directory: ./agricultural_project
         run: |
           python manage.py migrate --noinput
 
       - name: Run tests
+        working-directory: ./agricultural_project
         run: |
           python manage.py test --verbosity=2
